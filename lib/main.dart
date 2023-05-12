@@ -1,14 +1,28 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:location/location.dart';
 import 'package:camera/camera.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
+import 'package:light/light.dart';
+import 'package:provider/provider.dart';
+
+class ThemeNotifier with ChangeNotifier {
+  bool _isDarkMode = false;
+
+  bool get isDarkMode => _isDarkMode;
+
+  void updateTheme(bool isDarkMode) {
+    _isDarkMode = isDarkMode;
+    notifyListeners();
+  }
+}
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider<ThemeNotifier>(
+      create: (_) => ThemeNotifier(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -16,11 +30,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: themeNotifier.isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      // theme: ThemeData(
+      //   primarySwatch: Colors.blue,
+      // ),
       home: const SecondPage(),
       routes: {
         '/second': (context) => const MyHomePage(title: 'Flutter Demo Home Page'),
@@ -45,10 +62,38 @@ class _MyHomePageState extends State<MyHomePage> {
   List<double> _gyroscopeValues = [0, 0, 0];
   List<double> _magnetometerValues = [0, 0, 0];
   LocationData? _currentLocation;
+  int _lightIntensity = 0;
+  late ThemeNotifier _themeNotifier;
+
+  late Light _light;
 
   @override
   void initState() {
     super.initState();
+    _light = Light();
+
+    // Initialize light sensor
+    _initLightSensor();
+
+    // Initialize other sensors and location
+    _initSensors();
+    _getLocation();
+  }
+
+  void _initLightSensor() async {
+    try {
+      _light.lightSensorStream.listen((lightIntensity) {
+        setState(() {
+          _lightIntensity = lightIntensity;
+          _updateTheme();
+        });
+      });
+    } catch (e) {
+      print('Light sensor not available: $e');
+    }
+  }
+
+  void _initSensors() {
     accelerometerEvents.listen((AccelerometerEvent event) {
       setState(() {
         _accelerometerValues = <double>[event.x, event.y, event.z];
@@ -72,9 +117,10 @@ class _MyHomePageState extends State<MyHomePage> {
         _magnetometerValues = <double>[event.x, event.y, event.z];
       });
     });
-
-    _getLocation();
   }
+  //
+  //   _getLocation();
+  // }
 
   void _getLocation() async {
     Location location = Location();
@@ -111,53 +157,59 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _updateTheme() {
+    bool isDarkMode = _lightIntensity < 50.0;
+    _themeNotifier.updateTheme(isDarkMode);
+  }
+
   @override
   Widget build(BuildContext context) {
+    _themeNotifier = Provider.of<ThemeNotifier>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
       body: Center(
-      child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-    const Text(
-    'You have pushed the button this many times:',
-    ),
-    Text(
-    '$_counter',
-    style: Theme.of(context).textTheme.headline6
-    ),
-        SizedBox(height: 16.0),
-        Text('Accelerometer Data'),
-        Text('X: ${_accelerometerValues[0]}'),
-        Text('Y: ${_accelerometerValues[1]}'),
-        Text('Z: ${_accelerometerValues[2]}'),
-        SizedBox(height: 16.0),
-        Text('User Accelerometer Data'),
-        Text('X: ${_userAccelerometerValues[0]}'),
-        Text('Y: ${_userAccelerometerValues[1]}'),
-        Text('Z: ${_userAccelerometerValues[2]}'),
-        SizedBox(height: 16.0),
-        Text('Gyroscope Data'),
-        Text('X: ${_gyroscopeValues[0]}'),
-        Text('Y: ${_gyroscopeValues[1]}'),
-        Text('Z: ${_gyroscopeValues[2]}'),
-        SizedBox(height: 16.0),
-        Text('Magnetometer Data'),
-        Text('X: ${_magnetometerValues[0]}'),
-        Text('Y: ${_magnetometerValues[1]}'),
-        Text('Z: ${_magnetometerValues[2]}'),
-        SizedBox(height: 16.0),
-        if (_currentLocation != null) ...[
-          Text('Latitude: ${_currentLocation!.latitude}'),
-          Text('Longitude: ${_currentLocation!.longitude}'),
-        ] else
-          Text('Location data unavailable'),
-        SizedBox(height: 16.0),
-
-      ],
-      ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'You have pushed the button this many times:',
+            ),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headline6,
+            ),
+            SizedBox(height: 16.0),
+            Text('Accelerometer Data'),
+            Text('X: ${_accelerometerValues[0]}'),
+            Text('Y: ${_accelerometerValues[1]}'),
+            Text('Z: ${_accelerometerValues[2]}'),
+            SizedBox(height: 16.0),
+            Text('User Accelerometer Data'),
+            Text('X: ${_userAccelerometerValues[0]}'),
+            Text('Y: ${_userAccelerometerValues[1]}'),
+            Text('Z: ${_userAccelerometerValues[2]}'),
+            SizedBox(height: 16.0),
+            Text('Gyroscope Data'),
+            Text('X: ${_gyroscopeValues[0]}'),
+            Text('Y: ${_gyroscopeValues[1]}'),
+            Text('Z: ${_gyroscopeValues[2]}'),
+            SizedBox(height: 16.0),
+            Text('Magnetometer Data'),
+            Text('X: ${_magnetometerValues[0]}'),
+            Text('Y: ${_magnetometerValues[1]}'),
+            Text('Z: ${_magnetometerValues[2]}'),
+            SizedBox(height: 16.0),
+            if (_currentLocation != null) ...[
+              Text('Latitude: ${_currentLocation!.latitude}'),
+              Text('Longitude: ${_currentLocation!.longitude}'),
+            ] else
+              Text('Location data unavailable'),
+            SizedBox(height: 16.0),
+            Text('Light Intensity: $_lightIntensity'),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
@@ -179,7 +231,6 @@ class _SecondPageState extends State<SecondPage> {
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
   bool _isCameraInitialized = false;
-  late File _capturedImage;
 
   @override
   void initState() {
