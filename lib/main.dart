@@ -290,13 +290,16 @@ class _FirstPageState extends State<FirstPage> {
     try {
       final resJson = jsonDecode(res.body);
       message = resJson['message'];
-      setState(() {
 
-      });
       if(message == "0"){
         Navigator.pushNamed(context, '/second');
       }
+      else {
+        message = "not the right person";
+      }
+      setState(() {
 
+      });
       // Process the response JSON
     } catch (e) {
       print('Error decoding JSON: $e');
