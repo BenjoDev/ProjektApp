@@ -273,19 +273,17 @@ class _FirstPageState extends State<FirstPage> {
   }
 
   uploadImage() async{
+    await http.post(Uri.parse('https://3129-89-143-87-222.eu.ngrok.io/name'), body: json.encode({'name' : "1"})); // 0 = Benjamin, 1 = Žan
+
     final request = http.MultipartRequest("POST", Uri.parse('https://3129-89-143-87-222.eu.ngrok.io/upload'));
-
     final headers = {"Content-type": "multipart/form-data"};
-
     request.files.add(
       http.MultipartFile('image', selectedImage!.readAsBytes().asStream(), selectedImage!.lengthSync(),
           filename: selectedImage!.path.split("/").last)
     );
     
     request.headers.addAll(headers);
-
     final response = await request.send();
-
     http.Response res = await http.Response.fromStream(response);
     try {
       final resJson = jsonDecode(res.body);
