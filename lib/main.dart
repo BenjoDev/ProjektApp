@@ -86,7 +86,24 @@ class _MyHomePageState extends State<MyHomePage> {
   double latDelta = 0;
   double longDelta = 0;
 
-  Map<String, dynamic> _readData = { };
+  Map<String, dynamic> _readData = {
+    'capturedBy': 0,
+    'latitude_start': 0,
+    'longitude_start': 0,
+    'latitude_end': 0,
+    'longitude_end': 0,
+    'captureDate': DateTime.now().toIso8601String(),
+    'accelerometerX': 0,
+    'accelerometerY': 0,
+    'accelerometerZ': 0,
+    'userAccelerometerX': 0,
+    'userAccelerometerY': 0,
+    'userAccelerometerZ': 0,
+    'gyroscopeX': 0,
+    'gyroscopeY': 0,
+    'gyroscopeZ': 0,
+    'lightIntensity': 0,
+  };
 
 
 
@@ -180,6 +197,20 @@ class _MyHomePageState extends State<MyHomePage> {
     _themeNotifier.updateTheme(isDarkMode);
   }
 
+  void addData(){
+    _accelerometerListX.add(_accelerometerValues[0]);
+    _accelerometerListY.add(_accelerometerValues[1]);
+    _accelerometerListZ.add(_accelerometerValues[2]);
+    _userAccelerometerListX.add(_userAccelerometerValues[0]);
+    _userAccelerometerListY.add(_userAccelerometerValues[1]);
+    _userAccelerometerListZ.add(_userAccelerometerValues[2]);
+    _gyroscopeListX.add(_gyroscopeValues[0]);
+    _gyroscopeListY.add(_gyroscopeValues[1]);
+    _gyroscopeListZ.add(_gyroscopeValues[2]);
+    setState(() {  });
+
+  }
+
   void readData(){
     // Pošiljanje podatkov:
     // vsakih 10s, 2x lokacija vsakih 5s
@@ -188,7 +219,9 @@ class _MyHomePageState extends State<MyHomePage> {
     if(_readCount == 5){
       _getLocation();
       _endLocation = _startLocation;
+      addData();
     }else if(_readCount == 10){
+      addData();
       _getLocation();
       //send + null
 
@@ -227,20 +260,10 @@ class _MyHomePageState extends State<MyHomePage> {
       _gyroscopeListX = [];
       _gyroscopeListY = [];
       _gyroscopeListZ = [];
-      setState(() {  });
       _readCount = 0;
 
     }else{
-      _accelerometerListX.add(_accelerometerValues[0]);
-      _accelerometerListY.add(_accelerometerValues[1]);
-      _accelerometerListZ.add(_accelerometerValues[2]);
-      _userAccelerometerListX.add(_userAccelerometerValues[0]);
-      _userAccelerometerListY.add(_userAccelerometerValues[1]);
-      _userAccelerometerListZ.add(_userAccelerometerValues[2]);
-      _gyroscopeListX.add(_gyroscopeValues[0]);
-      _gyroscopeListY.add(_gyroscopeValues[1]);
-      _gyroscopeListZ.add(_gyroscopeValues[2]);
-
+      addData();
     }
     print("Read count:$_readCount");
     _readCount++;
@@ -260,50 +283,93 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            // const Text(
-            //   'You have pushed the button this many times:',
-            // ),
-            // Text(
-            //   '$_counter',
-            // ),
+            Text('User: ${_user}'),
             SizedBox(height: 16.0),
-            // Text(_readData.toString())
+            Text('Start long/lat'),
+            if(_startLocation != null)
+              Text('${_startLocation?.longitude} / ${_startLocation?.latitude}'),
+            SizedBox(height: 16.0),
+            Text('End long/lat'),
+            if(_endLocation != null)
+              Text('${_endLocation?.longitude} / ${_endLocation?.latitude}'),
+            SizedBox(height: 16.0),
+
+
+            Text('Accelerometer Data'),
+            if(_accelerometerListX.isNotEmpty)
+            Text('X: ${_accelerometerListX.last}'),
+            if(_accelerometerListY.isNotEmpty)
+              Text('Y: ${_accelerometerListY.last}'),
+            if(_accelerometerListZ.isNotEmpty)
+              Text('Z: ${_accelerometerListZ.last}'),
+            SizedBox(height: 16.0),
+
+            Text('User accelerometer Data'),
+            if(_userAccelerometerListX.isNotEmpty)
+              Text('X: ${_userAccelerometerListX.last}'),
+            if(_userAccelerometerListY.isNotEmpty)
+              Text('Y: ${_userAccelerometerListY.last}'),
+            if(_userAccelerometerListZ.isNotEmpty)
+              Text('Z: ${_userAccelerometerListZ.last}'),
+            SizedBox(height: 16.0),
+
+            Text('Gyroscope Data'),
+            if(_gyroscopeListX.isNotEmpty)
+            Text('X: ${_gyroscopeListX.last}'),
+            if(_gyroscopeListY.isNotEmpty)
+              Text('Y: ${_gyroscopeListY.last}'),
+            if(_gyroscopeListZ.isNotEmpty)
+              Text('Z: ${_gyroscopeListZ.last}'),
+            SizedBox(height: 16.0),
+
+            Text('Light intensity'),
+            if(_lightIntensity != null)
+              Text('${_lightIntensity}'),
+            SizedBox(height: 16.0),
+
+
+            // Text('User: ${_readData['capturedBy']}'),
+            // SizedBox(height: 16.0),
+            //
+            // Text('Start long/lat'),
+            // Text('${_readData['longitude_start']} / ${_readData['latitude_start']}'),
+            // SizedBox(height: 16.0),
+            // Text('End long/lat'),
+            // Text('${_readData['longitude_end']} / ${_readData['latitude_end']}'),
+            // SizedBox(height: 16.0),
+            //
             // Text('Accelerometer Data'),
-            // Text('X: ${_accelerometerValues[0]}'),
-            // Text('Y: ${_accelerometerValues[1]}'),
-            // Text('Z: ${_accelerometerValues[2]}'),
+            // Text('X: ${_readData['accelerometerX']}'),
+            // Text('Y: ${_readData['accelerometerY']}'),
+            // Text('Z: ${_readData['accelerometerZ']}'),
             // SizedBox(height: 16.0),
-            // Text('User Accelerometer Data'),
-            // Text('X: ${_userAccelerometerValues[0]}'),
-            // Text('Y: ${_userAccelerometerValues[1]}'),
-            // Text('Z: ${_userAccelerometerValues[2]}'),
+            //
+            // Text('User accelerometer Data'),
+            // Text('X: ${_readData['userAccelerometerX']}'),
+            // Text('Y: ${_readData['userAccelerometerY']}'),
+            // Text('Z: ${_readData['userAccelerometerZ']}'),
             // SizedBox(height: 16.0),
+            //
             // Text('Gyroscope Data'),
-            // Text('X: ${_gyroscopeValues[0]}'),
-            // Text('Y: ${_gyroscopeValues[1]}'),
-            // Text('Z: ${_gyroscopeValues[2]}'),
+            // Text('X: ${_readData['gyroscopeX']}'),
+            // Text('Y: ${_readData['gyroscopeY']}'),
+            // Text('Z: ${_readData['gyroscopeZ']}'),
             // SizedBox(height: 16.0),
-            // Text('Magnetometer Data'),
-            // Text('X: ${_magnetometerValues[0]}'),
-            // Text('Y: ${_magnetometerValues[1]}'),
-            // Text('Z: ${_magnetometerValues[2]}'),
+            //
+            // Text('Light intensity'),
+            // Text('${_readData['lightIntensity']}'),
             // SizedBox(height: 16.0),
-            // if (_startLocation != null) ...[
-            //   Text('Latitude: ${_startLocation!.latitude}'),
-            //   Text('Longitude: ${_startLocation!.longitude}'),
-            // ] else
-            //   Text('Location data unavailable'),
-            // SizedBox(height: 16.0),
-            // Text('Light Intensity: $_lightIntensity'),
+
+
 
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: _incrementCounter,
+      //   tooltip: 'Increment',
+      //   child: const Icon(Icons.add),
+      // ),
     );
   }
 }
