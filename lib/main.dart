@@ -9,6 +9,7 @@ import 'package:light/light.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:projekt_app/sendData.dart';
 
 class ThemeNotifier with ChangeNotifier {
   bool _isDarkMode = false;
@@ -61,7 +62,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   int _user = 0; //update on login
   LocationData? _startLocation;
   LocationData? _endLocation;
@@ -74,15 +74,17 @@ class _MyHomePageState extends State<MyHomePage> {
   List<double> _gyroscopeListX = [];
   List<double> _gyroscopeListY = [];
   List<double> _gyroscopeListZ = [];
-  List<double> _magnetometerList = [];
+  // List<double> _magnetometerList = [];
   List<double> _accelerometerValues = [0,0,0];
   List<double> _userAccelerometerValues = [0,0,0];
   List<double> _gyroscopeValues = [0,0,0];
-  List<double> _magnetometerValues = [0,0,0];
+  // List<double> _magnetometerValues = [0,0,0];
   int _lightIntensity = 0;
   late ThemeNotifier _themeNotifier;
   late Light _light;
   int _readCount = 0;
+  double latDelta = 0;
+  double longDelta = 0;
 
   Map<String, dynamic> _readData = { };
 
@@ -130,11 +132,11 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     });
 
-    magnetometerEvents.listen((MagnetometerEvent event) {
-      setState(() {
-        _magnetometerValues = <double>[event.x, event.y, event.z];
-      });
-    });
+    // magnetometerEvents.listen((MagnetometerEvent event) {
+    //   setState(() {
+    //     _magnetometerValues = <double>[event.x, event.y, event.z];
+    //   });
+    // });
   }
   void _getLocation() async {
     Location location = Location();
@@ -166,60 +168,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   void _incrementCounter() {
     setState(() {
-      _counter++;
+      // _counter++;
     });
     // sendCaptureData();
   }
 
-  // Pošiljanje podatkov:
-  // vsakih 10s, 2x lokacija vsakih 5s
-  // vsako sekundo zajameš vse senzorje in dodas v array
-  // 'capturedBy' : Number,
-  // 	'latitude_start' : Number,
-  // 	'longitude_start' : Number,
-  // 	'latitude_end' : Number,
-  // 	'longitude_end' : Number,
-  // 	'captureDate' : Date,
-  // 	'accelerometerX': [Number],
-  // 	'accelerometerY': [Number],
-  // 	'accelerometerZ': [Number],
-  // 	'userAccelerometerX': [Number],
-  // 	'userAccelerometerY': [Number],
-  // 	'userAccelerometerZ': [Number],
-  // 	'gyroscopeX': [Number],
-  // 	'gyroscopeY': [Number],
-  // 	'gyroscopeZ': [Number],
-  // 	'lightIntensity': Number,
-  // 	'roadQuality': Number
 
-  Future<void> sendCaptureData() async {
-    // Define the capture data to send
-
-    print("Sending!!!");
-    // Convert capture data to JSON
-    String jsonData = jsonEncode(_readData);
-    // String jsonData = jsonEncode(_readData);
-
-    try {
-      // Send a POST request to the API endpoint
-      final response = await http.post(
-        Uri.parse('http://10.0.2.2:3001/phoneData'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonData,
-      );
-
-      if (response.statusCode == 201) {
-        // Capture data successfully sent
-        print('Capture data sent successfully');
-      } else {
-        // Handle error if capture data sending failed
-        print('Failed to send capture data: ${response.statusCode}');
-      }
-    } catch (error) {
-      // Handle any exceptions or network errors
-      print('Error sending capture data: $error');
-    }
-  }
 
   void _updateTheme() {
     bool isDarkMode = _lightIntensity < 50.0;
@@ -227,6 +181,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void readData(){
+    // Pošiljanje podatkov:
+    // vsakih 10s, 2x lokacija vsakih 5s
+    // vsako sekundo zajameš vse senzorje in dodas v array
+
     if(_readCount == 5){
       _getLocation();
       _endLocation = _startLocation;
@@ -253,7 +211,12 @@ class _MyHomePageState extends State<MyHomePage> {
       'lightIntensity': _lightIntensity,
     };
 
-      sendCaptureData();
+      longDelta = (_startLocation!.longitude! - _endLocation!.longitude!).abs();
+      latDelta = (_startLocation!.latitude! - _endLocation!.latitude!).abs();
+      print("Long/lat delta:$longDelta / $latDelta");
+      if(longDelta > 0.00001 || latDelta > 0.00001){
+        sendCaptureData(_readData);
+      }
 
       _accelerometerListX = [];
       _accelerometerListY = [];

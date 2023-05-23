@@ -37,7 +37,7 @@ dependencies:
   sensors_plus: ^3.0.0
   location: ^4.3.0
   camera: 0.10.5
-  path: 1.8.2
+  path: 1.8.3
   path_provider: ^2.0.15
   permission_handler: ^10.2.0
   light: ^2.1.0
