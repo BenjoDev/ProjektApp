@@ -37,6 +37,8 @@ class MyApp extends StatelessWidget {
   MyApp({Key? key}) : super(key: key);
 
   String ip = "http://192.168.175.83";
+  // String ip = "http://10.0.2.2";
+  String user_id = "null";
 
   @override
   Widget build(BuildContext context) {
@@ -59,10 +61,11 @@ class MyApp extends StatelessWidget {
 }
 
 class Login extends StatefulWidget {
-   const Login({Key? key, required this.ip}) : super(key: key);
+   Login({Key? key, required this.ip}) : super(key: key);
 
   final String ip;
-  @override
+
+   @override
   _LoginState createState() => _LoginState();
 }
 
@@ -97,31 +100,38 @@ class _LoginState extends State<Login> {
     // Convert capture data to JSON
     String jsonData = jsonEncode(data);
 
-    Navigator.pushNamed(context, '/send');
+    print("Sending ${data.toString()} to:${widget.ip}");
 
-    // try {
-    //   // Send a POST request to the API endpoint
-    //   var http;
-    //   final response = await http.post(
-    //     Uri.parse('${widget.ip}:3001/login'),
-    //     headers: {'Content-Type': 'application/json'},
-    //     body: jsonData,
-    //   );
-    //
-    //   if (response.statusCode == 201) {
-    //     // Capture data successfully sent
-    //     print('Capture data sent successfully');
-    //     Navigator.pushNamed(context, '/faceRecognition');
-    //
-    //   } else {
-    //     // Handle error if capture data sending failed
-    //     print('Failed to send capture data: ${response.statusCode}');
-    //   }
-    // } catch (error) {
-    //   // Handle any exceptions or network errors
-    //   print('Error sending capture data: $error');
-    // }
-    //
+
+    // Navigator.pushNamed(context, '/send');
+
+    try {
+      // Send a POST request to the API endpoint
+      // var http;
+      final response = await http.post(
+        Uri.parse('${widget.ip}:3001/users/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonData,
+      );
+
+      if (response.statusCode == 200) {
+        // Capture data successfully sent
+        print('Capture data sent successfully');
+        var recived = jsonDecode(response.body);
+        var id = recived['_id'];
+        print(id);
+
+        Navigator.pushNamed(context, '/faceRecognition', arguments: id);
+
+      } else {
+        // Handle error if capture data sending failed
+        print('Failed to send capture data: ${response.statusCode}');
+      }
+    } catch (error) {
+      // Handle any exceptions or network errors
+      print('Error sending capture data: $error');
+    }
+
   }
 
   @override
@@ -141,7 +151,7 @@ class _LoginState extends State<Login> {
                 decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'User Name',
-                    hintText: 'usernamr'
+                    hintText: 'username'
                 ),
               ),
             ),

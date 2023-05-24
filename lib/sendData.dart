@@ -1,21 +1,19 @@
-
+import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 Future<void> sendCaptureData(  Map<String, dynamic> _readData, String ip) async {
   // Define the capture data to send
 
-  print("Sending!!!");
+  print("Sending to $ip");
   // Convert capture data to JSON
   String jsonData = jsonEncode(_readData);
   // String jsonData = jsonEncode(_readData);
 
   try {
     // Send a POST request to the API endpoint
-    var http;
+    // var http;
     final response = await http.post(
-      Uri.parse('${ip}:3001/phoneData'),
-      // Uri.parse('http://164.8.39.81:3001/phoneData'),
-      // Uri.parse('http://10.0.2.2:3001/phoneData'),
+      Uri.parse('$ip:3001/phoneData'),
       headers: {'Content-Type': 'application/json'},
       body: jsonData,
     );

@@ -221,9 +221,11 @@ class _DataSendState extends State<DataSend> {
       longDelta = (_startLocation!.longitude! - _endLocation!.longitude!).abs();
       latDelta = (_startLocation!.latitude! - _endLocation!.latitude!).abs();
       print("Long/lat delta:$longDelta / $latDelta");
-      if(longDelta > 0.00001 || latDelta > 0.00001){
+      // if(longDelta > 0.00001 || latDelta > 0.00001) {
         sendCaptureData(_readData, widget.ip);
-      }
+      // }else{
+      //   print("no movment no send");
+      // }
 
       _accelerometerListX = [];
       _accelerometerListY = [];

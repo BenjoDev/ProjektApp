@@ -22,6 +22,7 @@ class FaceRecognition extends StatefulWidget {
 }
 
 class _FaceRecognitionState extends State<FaceRecognition> {
+
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
   bool _isCameraInitialized = false;
@@ -41,7 +42,7 @@ class _FaceRecognitionState extends State<FaceRecognition> {
   Future<void> initializeCamera() async {
     _cameras = await availableCameras();
     if (_cameras!.isNotEmpty) {
-      _cameraController = CameraController(_cameras![1], ResolutionPreset.medium);
+      _cameraController = CameraController(_cameras![0], ResolutionPreset.medium);
       await _cameraController!.initialize();
       setState(() {
         _isCameraInitialized = true;
@@ -72,11 +73,11 @@ class _FaceRecognitionState extends State<FaceRecognition> {
   }
 
   uploadImage() async{
-    // String ip = "8bc4-89-143-87-222.eu.ngrok.io";
-    // String ip = "localhost:5000";
-    // String ip = "http://192.168.175.83";
+    final id = ModalRoute.of(context)!.settings.arguments;
+    print("recived id: $id");
 
-    final response0 = await http.post(Uri.parse('${widget.ip}/name'), body: json.encode({'name' : '1'})); // 0 = Benjamin, 1 = Žan
+
+    final response0 = await http.post(Uri.parse('${widget.ip}:5000/name'), body: json.encode({'name' : '0'})); // 0 = Benjamin, 1 = Žan
 
     final request = http.MultipartRequest("POST", Uri.parse('${widget.ip}:5000/upload'));
     final headers = {"Content-type": "multipart/form-data"};
