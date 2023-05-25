@@ -42,7 +42,7 @@ class _FaceRecognitionState extends State<FaceRecognition> {
   Future<void> initializeCamera() async {
     _cameras = await availableCameras();
     if (_cameras!.isNotEmpty) {
-      _cameraController = CameraController(_cameras![0], ResolutionPreset.medium);
+      _cameraController = CameraController(_cameras![1], ResolutionPreset.medium);
       await _cameraController!.initialize();
       setState(() {
         _isCameraInitialized = true;
@@ -92,8 +92,8 @@ class _FaceRecognitionState extends State<FaceRecognition> {
     try {
       final resJson = jsonDecode(res.body);
       message = resJson['message'];
-
-      if(message == "0"){
+      print("thisMessage:$message");
+      if(message != "0"){
         Navigator.pushNamed(context, '/send');
       }
       else {

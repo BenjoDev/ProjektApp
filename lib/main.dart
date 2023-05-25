@@ -36,7 +36,7 @@ void main() {
 class MyApp extends StatelessWidget {
   MyApp({Key? key}) : super(key: key);
 
-  String ip = "http://192.168.175.83";
+  String ip = "http://192.168.137.1";
   // String ip = "http://10.0.2.2";
   String user_id = "null";
 
@@ -64,6 +64,8 @@ class Login extends StatefulWidget {
    Login({Key? key, required this.ip}) : super(key: key);
 
   final String ip;
+  String message = "";
+
 
    @override
   _LoginState createState() => _LoginState();
@@ -123,7 +125,12 @@ class _LoginState extends State<Login> {
 
         Navigator.pushNamed(context, '/faceRecognition', arguments: id);
 
-      } else {
+      }else if(response.statusCode == 401){
+        print('Invalid credentials: ${response.statusCode}');
+        setState(() {
+          widget.message = "Wrong username or password";
+        });
+      }else {
         // Handle error if capture data sending failed
         print('Failed to send capture data: ${response.statusCode}');
       }
@@ -182,6 +189,9 @@ class _LoginState extends State<Login> {
                 ),
               ),
             ),
+            Text(
+              widget.message
+            )
           ],
         ),
       ),
