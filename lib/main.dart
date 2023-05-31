@@ -38,6 +38,7 @@ class MyApp extends StatelessWidget {
 
   String ip = "http://192.168.137.1";
   // String ip = "http://10.0.2.2";
+  // String ip = "http://164.8.38.29";
   String user_id = "null";
 
   @override
@@ -120,10 +121,9 @@ class _LoginState extends State<Login> {
         // Capture data successfully sent
         print('Capture data sent successfully');
         var recived = jsonDecode(response.body);
-        var id = recived['_id'];
-        print(id);
-
-        Navigator.pushNamed(context, '/faceRecognition', arguments: id);
+        String username = recived['username'];
+        print(username);
+        Navigator.pushNamed(context, '/faceRecognition', arguments: username);
 
       }else if(response.statusCode == 401){
         print('Invalid credentials: ${response.statusCode}');

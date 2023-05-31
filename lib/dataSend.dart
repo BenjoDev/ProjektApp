@@ -36,7 +36,8 @@ class DataSend extends StatefulWidget {
 }
 
 class _DataSendState extends State<DataSend> {
-  int _user = 0; //update on login
+  // var _user = "non"; //update on login
+
   LocationData? _startLocation;
   LocationData? _endLocation;
   List<double> _accelerometerListX = [];
@@ -60,6 +61,9 @@ class _DataSendState extends State<DataSend> {
   double latDelta = 0;
   double longDelta = 0;
 
+  LocationData? _sendStartLocation;
+  LocationData? _sndEndLocation;
+
   Map<String, dynamic> _readData = {
     'capturedBy': 0,
     'latitude_start': 0,
@@ -80,7 +84,6 @@ class _DataSendState extends State<DataSend> {
   };
 
 
-
   @override
   void initState() {
     super.initState();
@@ -89,7 +92,6 @@ class _DataSendState extends State<DataSend> {
     _initSensors();
     _getLocation();
     Timer.periodic(Duration(seconds: 1), (Timer t) => readData());
-
   }
 
   void _initLightSensor() async {
@@ -129,7 +131,7 @@ class _DataSendState extends State<DataSend> {
     //   });
     // });
   }
-  void _getLocation() async {
+  Future<LocationData?> _getLocation() async {
     Location location = Location();
 
     bool _serviceEnabled;
@@ -140,7 +142,7 @@ class _DataSendState extends State<DataSend> {
     if (!_serviceEnabled) {
       _serviceEnabled = await location.requestService();
       if (!_serviceEnabled) {
-        return;
+        return null;
       }
     }
 
@@ -148,15 +150,19 @@ class _DataSendState extends State<DataSend> {
     if (_permissionGranted == PermissionStatus.denied) {
       _permissionGranted = await location.requestPermission();
       if (_permissionGranted != PermissionStatus.granted) {
-        return;
+        return null;
       }
     }
 
     _locationData = await location.getLocation();
+    // print("New location: $_locationData");
+
     setState(() {
       _startLocation = _locationData;
     });
+    return _locationData;
   }
+
   void _incrementCounter() {
     setState(() {
       // _counter++;
@@ -185,26 +191,30 @@ class _DataSendState extends State<DataSend> {
 
   }
 
-  void readData(){
+  void readData() async{
     // Pošiljanje podatkov:
     // vsakih 10s, 2x lokacija vsakih 5s
     // vsako sekundo zajameš vse senzorje in dodas v array
-
-    if(_readCount == 5){
-      _getLocation();
-      _endLocation = _startLocation;
+//async!!!
+    if(_readCount == 1){
+       // _getLocation();
+      // _sendStartLocation = await _getLocation();
+      _sendStartLocation = _sndEndLocation;
       addData();
+    }else if(_readCount == 5) {
     }else if(_readCount == 10){
+      _sndEndLocation = await _getLocation();
       addData();
-      _getLocation();
       //send + null
-
+      // _getLocation();
+      // _sndEndLocation = _startLocation;
+      //   final _user = ModalRoute.of(context)!.settings.arguments;
       _readData = {
-        'capturedBy': _user,
-        'latitude_start': _endLocation?.latitude,
-        'longitude_start': _endLocation?.longitude,
-        'latitude_end': _startLocation?.latitude,
-        'longitude_end': _startLocation?.longitude,
+        'capturedBy': ModalRoute.of(context)!.settings.arguments.toString(),
+        'latitude_start': _sendStartLocation?.latitude,
+        'longitude_start': _sendStartLocation?.longitude,
+        'latitude_end': _sndEndLocation?.latitude,
+        'longitude_end': _sndEndLocation?.longitude,
         'captureDate': DateTime.now().toIso8601String(),
         'accelerometerX': _accelerometerListX,
         'accelerometerY': _accelerometerListY,
@@ -217,15 +227,20 @@ class _DataSendState extends State<DataSend> {
         'gyroscopeZ': _gyroscopeListZ,
         'lightIntensity': _lightIntensity,
       };
+      if(_sendStartLocation != null && _sndEndLocation != null){
+        longDelta = (_sendStartLocation!.longitude! - _sndEndLocation!.longitude!).abs();
+        latDelta = (_sendStartLocation!.latitude! - _sndEndLocation!.latitude!).abs();
+        print("Long/lat delta:$longDelta / $latDelta");
+        print("Start: $_sendStartLocation");
+        print("End: $_sndEndLocation");
 
-      longDelta = (_startLocation!.longitude! - _endLocation!.longitude!).abs();
-      latDelta = (_startLocation!.latitude! - _endLocation!.latitude!).abs();
-      print("Long/lat delta:$longDelta / $latDelta");
-      // if(longDelta > 0.00001 || latDelta > 0.00001) {
-        sendCaptureData(_readData, widget.ip);
-      // }else{
-      //   print("no movment no send");
-      // }
+        if(longDelta > 0.00001 || latDelta > 0.00001) {
+          sendCaptureData(_readData, widget.ip);
+        }else{
+          print("no movment no send");
+        }
+      }
+
 
       _accelerometerListX = [];
       _accelerometerListY = [];
@@ -241,7 +256,7 @@ class _DataSendState extends State<DataSend> {
     }else{
       addData();
     }
-    print("Read count:$_readCount");
+    // print("Read count:$_readCount");
     _readCount++;
   }
 
@@ -259,7 +274,7 @@ class _DataSendState extends State<DataSend> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('User: ${_user}'),
+            // Text('User: ${_user}'),
             SizedBox(height: 16.0),
             Text('Start long/lat'),
             if(_startLocation != null)

@@ -5,6 +5,9 @@ Future<void> sendCaptureData(  Map<String, dynamic> _readData, String ip) async 
   // Define the capture data to send
 
   print("Sending to $ip");
+  print("Start: ${_readData['latitude_start']}/${_readData['longitude_start']}");
+  print("Start: ${_readData['latitude_end']}/${_readData['longitude_end']}");
+
   // Convert capture data to JSON
   String jsonData = jsonEncode(_readData);
   // String jsonData = jsonEncode(_readData);

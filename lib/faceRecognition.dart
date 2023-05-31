@@ -65,7 +65,7 @@ class _FaceRecognitionState extends State<FaceRecognition> {
 
       });
       uploadImage();
-      // Navigator.pushNamed(context, '/send');
+      // Navigator.pushNamed(context, '/send', arguments: ModalRoute.of(context)!.settings.arguments);
 
       // Handle the captured image path, e.g., display it in an ImageView
       print('Image Path: ${imagePath.path}');
@@ -73,11 +73,11 @@ class _FaceRecognitionState extends State<FaceRecognition> {
   }
 
   uploadImage() async{
-    final id = ModalRoute.of(context)!.settings.arguments;
-    print("recived id: $id");
+    final username = ModalRoute.of(context)!.settings.arguments;
+    print("recived id: $username");
 
 
-    final response0 = await http.post(Uri.parse('${widget.ip}:5000/name'), body: json.encode({'name' : '0'})); // 0 = Benjamin, 1 = Žan
+    // final response0 = await http.post(Uri.parse('${widget.ip}:5000/name'), body: json.encode({'name' : '0'})); // 0 = Benjamin, 1 = Žan
 
     final request = http.MultipartRequest("POST", Uri.parse('${widget.ip}:5000/upload'));
     final headers = {"Content-type": "multipart/form-data"};
@@ -93,8 +93,9 @@ class _FaceRecognitionState extends State<FaceRecognition> {
       final resJson = jsonDecode(res.body);
       message = resJson['message'];
       print("thisMessage:$message");
-      if(message != "0"){
-        Navigator.pushNamed(context, '/send');
+      //if message  = id
+      if(message == username){
+        Navigator.pushNamed(context, '/send', arguments: username);
       }
       else {
         message = "not the right person";
